@@ -1,28 +1,38 @@
-import { Suspense } from 'react';
-import { QueryClient, dehydrate } from '@tanstack/react-query';
-import { HydrationBoundary } from '@tanstack/react-query';
+'use client';
+import { useQuery } from '@tanstack/react-query';
 import { fetchNotes } from '@/lib/api';
-import NotesClient from './Notes.client';
-import type { FetchNotesResponse } from '@/lib/api';
+import Link from 'next/link';
+import type { Note } from '@/types/note';
+import css from '@/app/notes/filter/[...slug]/NotesPage.module.css';
 
-export default async function NotesPage() {
-  // Створюємо інстанс клієнта запитів
-  const queryClient = new QueryClient();
+interface NotesClientProps {
+  initialNotes: Note[];
+  tag: string;
+}
 
-  // Серверний префетчинг — завантажуємо дані до рендеру
-  await queryClient.prefetchQuery<FetchNotesResponse>({
-    queryKey: ['notes', '', 1],
-    queryFn: () => fetchNotes({ search: '', page: 1, perPage: 12 }),
+export default function NotesClient({ initialNotes, tag }: NotesClientProps) {
+  const { data: notes = [] } = useQuery({
+    queryKey: ['notes', tag],
+    queryFn: () =>
+      fetchNotes(tag === 'All' ? {} : { search: tag }).then(res => res.notes),
+    initialData: initialNotes,
   });
 
-  // "Зневоднюємо" кеш перед передачею на клієнт
-  const dehydratedState = dehydrate(queryClient);
-
   return (
-    <Suspense fallback={<p>Loading notes…</p>}>
-      <HydrationBoundary state={dehydratedState}>
-        <NotesClient />
-      </HydrationBoundary>
-    </Suspense>
+    <div className={css.container}>
+      <h1 className={css.title}>
+        {tag === 'All' ? 'All Notes' : `${tag} Notes`}
+      </h1>
+      <ul className={css.list}>
+        {notes.map(note => (
+          <li key={note.id} className={css.item}>
+            <Link href={`/notes/${note.id}`} className={css.link}>
+              <h2 className={css.noteTitle}>{note.title}</h2>
+              <p className={css.noteContent}>{note.content}</p>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
