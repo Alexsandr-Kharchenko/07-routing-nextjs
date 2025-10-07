@@ -9,7 +9,6 @@ export const metadata = {
   description: 'Manage your notes efficiently',
 };
 
-// ✅ Додаємо `modal` як слот для паралельного маршруту @modal
 export default function RootLayout({
   children,
   modal,
@@ -25,10 +24,8 @@ export default function RootLayout({
           <main>{children}</main>
           <Footer />
 
-          {/* ✅ Місце, куди Next.js буде вставляти твій @modal */}
           {modal}
 
-          {/* старий div можна залишити або прибрати */}
           <div id="modal-root"></div>
         </TanStackProvider>
       </body>
