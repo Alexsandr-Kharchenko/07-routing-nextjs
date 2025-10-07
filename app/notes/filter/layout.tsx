@@ -16,7 +16,7 @@ export default function NotesLayout({ children, sidebar }: NotesLayoutProps) {
   return (
     <section className={css.container}>
       <aside className={css.sidebar}>{sidebar}</aside>
-      {/* key змушує React перемонтувати children при зміні шляху */}
+
       <div key={pathname} className={css.notesWrapper}>
         {children}
       </div>
