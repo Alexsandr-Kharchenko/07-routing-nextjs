@@ -7,9 +7,8 @@ import {
 import NoteDetailsClient from './NoteDetails.client';
 
 interface Props {
-  params: Promise<{ id: string }>;
+  params: { id: string };
 }
-
 export default async function NoteDetails({ params }: Props) {
   const { id } = await params;
   const queryClient = new QueryClient();
