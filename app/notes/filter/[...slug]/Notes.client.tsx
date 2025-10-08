@@ -12,11 +12,17 @@ import { fetchNotes, type ResponseAPI } from '@/lib/api';
 import { Toaster } from 'react-hot-toast';
 import css from './NotesPage.module.css';
 
+import type { Note, NoteTag } from '@/types/note';
+
 interface NotesClientProps {
-  category?: string; // Тепер string замість NoteTag
+  category?: string; // або NoteTag | 'All'
+  initialNotes?: Note[];
 }
 
-export default function NotesClient({ category }: NotesClientProps) {
+export default function NotesClient({
+  category,
+  initialNotes = [],
+}: NotesClientProps) {
   const [searchInput, setSearchInput] = useState('');
   const [searchQuery, setSearchQuery] = useState(category || '');
   const [currentPage, setCurrentPage] = useState(1);
@@ -34,16 +40,25 @@ export default function NotesClient({ category }: NotesClientProps) {
   }, [searchInput]);
 
   const query = useQuery<ResponseAPI, Error>({
-    queryKey: ['notes', currentPage, perPage, searchQuery],
-    queryFn: () => fetchNotes(searchQuery, currentPage, category),
+    queryKey: ['notes', currentPage, perPage, searchQuery, category],
+    queryFn: () => {
+      const tag = (category ?? 'All') as NoteTag | 'All';
+      return fetchNotes({
+        searchWord: searchQuery,
+        page: currentPage,
+        tag,
+      });
+    },
     placeholderData: () => {
       const previousData = queryClient.getQueryData<ResponseAPI>([
         'notes',
         currentPage - 1 > 0 ? currentPage - 1 : 1,
         perPage,
         searchQuery,
+        category,
       ]);
-      return previousData ?? { notes: [], totalPages: 0 };
+      // Якщо немає попередніх даних, використовуємо initialNotes для першого рендеру
+      return previousData ?? { notes: initialNotes, totalPages: 0 };
     },
     refetchOnWindowFocus: false,
   });

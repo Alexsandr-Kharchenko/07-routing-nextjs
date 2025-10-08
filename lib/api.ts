@@ -1,46 +1,41 @@
 import axios from 'axios';
-import type { Note, NoteFormData } from '../types/note';
+import type { Note, NoteFormData, NoteTag } from '../types/note';
 
-// --- Типи для API ---
 export interface ResponseAPI {
   notes: Note[];
   totalPages: number;
 }
 
-// Тип для створення нотатки
-export interface CreateNote {
-  title: string;
-  content?: string;
-  tag: string;
-}
-
-// Параметри запиту нотаток
 export interface FetchNotesParams {
   searchWord: string;
   page: number;
-  tag?: string;
+  tag?: NoteTag | 'All';
 }
 
-// --- Налаштування axios ---
+export interface CreateNote {
+  title: string;
+  content?: string;
+  tag: NoteTag;
+}
+
+// Axios базові налаштування
 axios.defaults.baseURL = 'https://notehub-public.goit.study/api';
-axios.defaults.headers.common['Authorization'] = `Bearer ${
-  process.env.NEXT_PUBLIC_NOTEHUB_TOKEN
-}`;
+axios.defaults.headers.common['Authorization'] =
+  `Bearer ${process.env.NEXT_PUBLIC_NOTEHUB_TOKEN}`;
 
 // --- API функції ---
 export async function fetchNotes(
-  searchWord: string,
-  page: number,
-  tag?: string
+  params: FetchNotesParams
 ): Promise<ResponseAPI> {
-  if (tag === 'All') tag = undefined;
+  const { searchWord, page, tag } = params;
+  const queryTag = tag === 'All' ? undefined : tag;
 
   const res = await axios.get<ResponseAPI>('/notes', {
     params: {
       search: searchWord,
-      tag,
       page,
       perPage: 12,
+      tag: queryTag,
     },
   });
 

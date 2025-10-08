@@ -1,27 +1,33 @@
 'use client';
+
 import { useQuery } from '@tanstack/react-query';
-import { fetchNotes } from '@/lib/api';
+import { fetchNotes, type ResponseAPI } from '@/lib/api';
 import Link from 'next/link';
-import type { Note } from '@/types/note';
-import css from '@/app/notes/filter/[...slug]/NotesPage.module.css';
+import type { Note, NoteTag } from '@/types/note';
+import css from './filter/LayoutNotes.module.css';
 
 interface NotesClientProps {
-  initialNotes: Note[];
-  tag: string;
+  category?: NoteTag | 'All';
+  initialNotes?: Note[];
 }
 
-export default function NotesClient({ initialNotes, tag }: NotesClientProps) {
-  const { data: notes = [] } = useQuery({
-    queryKey: ['notes', tag],
+export default function NotesClient({
+  category = 'All',
+  initialNotes = [],
+}: NotesClientProps) {
+  const { data: notes = [] } = useQuery<Note[]>({
+    queryKey: ['notes', category],
     queryFn: () =>
-      fetchNotes('', 1, tag === 'All' ? undefined : tag).then(res => res.notes),
+      fetchNotes({ searchWord: '', page: 1, tag: category }).then(
+        (res: ResponseAPI) => res.notes
+      ),
     initialData: initialNotes,
   });
 
   return (
     <div className={css.container}>
       <h1 className={css.title}>
-        {tag === 'All' ? 'All Notes' : `${tag} Notes`}
+        {category === 'All' ? 'All Notes' : `${category} Notes`}
       </h1>
       <ul className={css.list}>
         {notes.map(note => (
