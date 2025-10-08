@@ -5,6 +5,7 @@ import {
   QueryClient,
 } from '@tanstack/react-query';
 import NotesClient from './Notes.client';
+import type { NoteTag } from '@/types/note'; // ✅ додаємо тип
 
 interface Props {
   params: Promise<{ slug: string[] }>;
@@ -17,7 +18,7 @@ export default async function Notes({ params }: Props) {
   const queryClient = new QueryClient();
 
   const { slug } = await params;
-  const category = slug[0];
+  const category = (slug?.[0] as NoteTag | 'All') || 'All';
 
   await queryClient.prefetchQuery({
     queryKey: ['notes', topic, page, category],
@@ -26,7 +27,7 @@ export default async function Notes({ params }: Props) {
         page,
         perPage: 12,
         ...(topic ? { search: topic } : {}),
-        ...(category ? { tag: category } : {}),
+        ...(category && category !== 'All' ? { tag: category } : {}),
       }),
   });
 
