@@ -1,4 +1,3 @@
-// app/notes/layout.tsx
 'use client';
 
 import { ReactNode } from 'react';

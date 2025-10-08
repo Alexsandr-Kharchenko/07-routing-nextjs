@@ -2,19 +2,15 @@ import axios from 'axios';
 import type { Note, NoteFormData, NoteTag } from '../types/note';
 
 // Беремо токен
-const token = process.env.NEXT_PUBLIC_NOTEHUB_TOKEN;
+const BASE_URL = 'https://notehub-public.goit.study/api';
+const NOTEHUB_TOKEN = process.env.NEXT_PUBLIC_NOTEHUB_TOKEN;
 
-if (!token) {
-  console.warn(
-    '⚠️ NEXT_PUBLIC_NOTEHUB_TOKEN is missing! API requests may fail.'
-  );
-}
+if (!NOTEHUB_TOKEN) throw new Error('Authorization token required');
 
-// --- Axios інстанс ---
 const api = axios.create({
-  baseURL: 'https://notehub-public.goit.study/api',
+  baseURL: BASE_URL,
   headers: {
-    Authorization: token ? `Bearer ${token}` : '',
+    Authorization: `Bearer ${NOTEHUB_TOKEN}`,
     'Content-Type': 'application/json;charset=utf-8',
   },
 });
