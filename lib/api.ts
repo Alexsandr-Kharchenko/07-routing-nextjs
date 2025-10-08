@@ -47,7 +47,7 @@ export const getNotes = async (tag?: NoteTag | 'All'): Promise<Note[]> => {
 };
 
 // Функція для отримання нотатки по ID
-export const getNoteById = async (id: string): Promise<Note> => {
+export const fetchNoteById = async (id: string): Promise<Note> => {
   if (!id) throw new Error('Note id is required');
   const { data } = await api.get<Note>(`/notes/${id}`);
   return data;

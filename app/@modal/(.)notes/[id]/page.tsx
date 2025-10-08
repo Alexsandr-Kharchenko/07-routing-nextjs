@@ -4,7 +4,7 @@ import {
   QueryClient,
 } from '@tanstack/react-query';
 
-import { getNoteById } from '@/lib/api';
+import { fetchNoteById } from '@/lib/api';
 import NotePreviewClient from './NotePreview.client';
 
 interface Props {
@@ -17,7 +17,7 @@ export default async function NotePreview({ params }: Props) {
 
   await queryClient.prefetchQuery({
     queryKey: ['note', id],
-    queryFn: () => getNoteById(id),
+    queryFn: () => fetchNoteById(id),
   });
 
   return (

@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { getNoteById } from '@/lib/api';
+import { fetchNoteById } from '@/lib/api';
 import type { Note } from '@/types/note';
 import type { DehydratedState } from '@tanstack/react-query';
 import styles from './NoteDetails.module.css';
@@ -18,7 +18,7 @@ export default function NoteDetailsClient({ noteId }: Props) {
     error,
   } = useQuery<Note>({
     queryKey: ['note', noteId],
-    queryFn: () => getNoteById(noteId),
+    queryFn: () => fetchNoteById(noteId),
     refetchOnMount: false,
   });
 
