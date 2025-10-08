@@ -8,22 +8,16 @@ import { fetchNotes } from '@/lib/api';
 import type { NoteTag } from '@/types/note';
 
 interface Props {
-  params: { slug: string[] };
+  params: Promise<{ slug: string[] }>;
 }
 
 export default async function Notes({ params }: Props) {
+  const { slug } = await params;
+  const category: NoteTag | 'All' = (slug?.[0] as NoteTag | undefined) || 'All';
+
   const queryClient = new QueryClient();
 
-  const category: NoteTag | 'All' =
-    (params.slug?.[0] as NoteTag | undefined) || 'All';
-
-  // SSR: отримуємо початкові дані
-  const initialData = await fetchNotes({
-    searchWord: '',
-    page: 1,
-    tag: category,
-  });
-
+  // Prefetch notes для SSR
   await queryClient.prefetchQuery({
     queryKey: ['notes', category],
     queryFn: () => fetchNotes({ searchWord: '', page: 1, tag: category }),
@@ -31,7 +25,7 @@ export default async function Notes({ params }: Props) {
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <NotesClient category={category} initialNotes={initialData.notes} />
+      <NotesClient category={category} />
     </HydrationBoundary>
   );
 }
