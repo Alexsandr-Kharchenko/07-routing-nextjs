@@ -12,14 +12,17 @@ import { Toaster } from 'react-hot-toast';
 import { useDebouncedCallback } from 'use-debounce';
 import css from './NotesPage.module.css';
 import type { FetchNotesResponse } from '@/lib/api';
+import type { NoteTag } from '@/types/note';
 
 // --- Опис пропсів ---
 interface NotesClientProps {
-  category?: string;
+  category?: NoteTag | 'All';
 }
 
 export default function NotesClient({ category }: NotesClientProps) {
-  const [selectedTag, setSelectedTag] = useState(category || 'All');
+  const [selectedTag, setSelectedTag] = useState<NoteTag | 'All'>(
+    category || 'All'
+  );
   const [topic, setTopic] = useState(''); // пошуковий запит
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -49,7 +52,7 @@ export default function NotesClient({ category }: NotesClientProps) {
         page: currentPage,
         perPage,
         ...(searchQuery ? { search: searchQuery } : {}),
-        ...(selectedTag !== 'All' ? { tag: selectedTag } : {}),
+        ...(selectedTag !== 'All' ? { tag: selectedTag as NoteTag } : {}),
       }),
     placeholderData: () => {
       const prev = queryClient.getQueryData<FetchNotesResponse>([
