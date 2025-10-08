@@ -2,67 +2,48 @@
 
 import { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+
 import SearchBox from '@/components/SearchBox/SearchBox';
 import Pagination from '@/components/Pagination/Pagination';
 import NoteList from '@/components/NoteList/NoteList';
 import Modal from '@/components/Modal/Modal';
 import NoteForm from '@/components/NoteForm/NoteForm';
-import { fetchNotes } from '@/lib/api';
+import { fetchNotes, type ResponseAPI } from '@/lib/api';
 import { Toaster } from 'react-hot-toast';
-import { useDebouncedCallback } from 'use-debounce';
 import css from './NotesPage.module.css';
-import type { FetchNotesResponse } from '@/lib/api';
-import type { NoteTag } from '@/types/note';
 
-// --- Опис пропсів ---
 interface NotesClientProps {
-  category?: NoteTag | 'All';
+  category?: string; // Тепер string замість NoteTag
 }
 
 export default function NotesClient({ category }: NotesClientProps) {
-  const [selectedTag, setSelectedTag] = useState<NoteTag | 'All'>(
-    category || 'All'
-  );
-  const [topic, setTopic] = useState(''); // пошуковий запит
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchInput, setSearchInput] = useState('');
+  const [searchQuery, setSearchQuery] = useState(category || '');
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const queryClient = useQueryClient();
   const perPage = 12;
 
-  // --- Оновлюємо тег при зміні пропса category ---
   useEffect(() => {
-    setSelectedTag(category || 'All');
-    setCurrentPage(1);
-  }, [category]);
+    const handler = setTimeout(() => {
+      setSearchQuery(searchInput);
+      setCurrentPage(1);
+    }, 500);
+    return () => clearTimeout(handler);
+  }, [searchInput]);
 
-  // --- Debounce для пошуку ---
-  const updateSearchWord = useDebouncedCallback((searchWord: string) => {
-    setTopic(searchWord);
-    setSearchQuery(searchWord);
-    setCurrentPage(1);
-  }, 500);
-
-  // --- React Query для нотаток ---
-  const query = useQuery<FetchNotesResponse, Error>({
-    queryKey: ['notes', selectedTag, currentPage, perPage, searchQuery],
-    queryFn: () =>
-      fetchNotes({
-        page: currentPage,
-        perPage,
-        ...(searchQuery ? { search: searchQuery } : {}),
-        ...(selectedTag !== 'All' ? { tag: selectedTag as NoteTag } : {}),
-      }),
+  const query = useQuery<ResponseAPI, Error>({
+    queryKey: ['notes', currentPage, perPage, searchQuery],
+    queryFn: () => fetchNotes(searchQuery, currentPage, category),
     placeholderData: () => {
-      const prev = queryClient.getQueryData<FetchNotesResponse>([
+      const previousData = queryClient.getQueryData<ResponseAPI>([
         'notes',
-        selectedTag,
         currentPage - 1 > 0 ? currentPage - 1 : 1,
         perPage,
         searchQuery,
       ]);
-      return prev ?? { notes: [], totalPages: 0 };
+      return previousData ?? { notes: [], totalPages: 0 };
     },
     refetchOnWindowFocus: false,
   });
@@ -78,7 +59,7 @@ export default function NotesClient({ category }: NotesClientProps) {
       <Toaster position="top-right" />
 
       <header className={css.toolbar}>
-        <SearchBox value={topic} onChange={updateSearchWord} />
+        <SearchBox value={searchInput} onChange={setSearchInput} />
         {totalPages > 1 && (
           <Pagination
             currentPage={currentPage}
@@ -93,9 +74,9 @@ export default function NotesClient({ category }: NotesClientProps) {
 
       <main className={css.content}>
         {query.isLoading || (query.isFetching && !notes.length) ? (
-          <p>Loading...</p>
+          <p>Loading, please wait...</p>
         ) : query.isError ? (
-          <p>Failed to load notes.</p>
+          <p>Something went wrong: Failed to load notes.</p>
         ) : notes.length === 0 ? (
           <p className={css.empty}>No notes found</p>
         ) : (

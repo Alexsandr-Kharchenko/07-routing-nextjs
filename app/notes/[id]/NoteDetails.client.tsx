@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchNoteById } from '@/lib/api';
 import type { Note } from '@/types/note';
 import type { DehydratedState } from '@tanstack/react-query';
-import styles from './NoteDetails.module.css';
+import styles from '../NoteDetails.module.css';
 
 interface Props {
   noteId: string;
