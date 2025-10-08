@@ -1,6 +1,7 @@
 import axios from 'axios';
 import type { Note, NoteFormData, NoteTag } from '../types/note';
 
+// Беремо токен
 const token = process.env.NEXT_PUBLIC_NOTEHUB_TOKEN;
 
 if (!token) {
@@ -9,15 +10,16 @@ if (!token) {
   );
 }
 
-//  Axios інстанс
+// --- Axios інстанс ---
 const api = axios.create({
   baseURL: 'https://notehub-public.goit.study/api',
   headers: {
-    Authorization: `Bearer ${token}`,
+    Authorization: token ? `Bearer ${token}` : '',
     'Content-Type': 'application/json;charset=utf-8',
   },
 });
 
+// --- Типи ---
 export interface ResponseAPI {
   notes: Note[];
   totalPages: number;
@@ -35,13 +37,14 @@ export interface CreateNote {
   tag: NoteTag;
 }
 
+// --- API функції ---
 export async function fetchNotes(
   params: FetchNotesParams
 ): Promise<ResponseAPI> {
-  try {
-    const { searchWord, page, tag } = params;
-    const queryTag = tag === 'All' ? undefined : tag;
+  const { searchWord, page, tag } = params;
+  const queryTag = tag === 'All' ? undefined : tag;
 
+  try {
     const res = await api.get<ResponseAPI>('/notes', {
       params: {
         search: searchWord,
@@ -50,7 +53,6 @@ export async function fetchNotes(
         tag: queryTag,
       },
     });
-
     return res.data;
   } catch (error) {
     console.error('fetchNotes error:', error);
