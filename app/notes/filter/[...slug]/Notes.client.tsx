@@ -57,7 +57,7 @@ export default function NotesClient({
         searchQuery,
         category,
       ]);
-      // Якщо немає попередніх даних, використовуємо initialNotes для першого рендеру
+
       return previousData ?? { notes: initialNotes, totalPages: 0 };
     },
     refetchOnWindowFocus: false,
