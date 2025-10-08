@@ -26,6 +26,7 @@ export interface FetchNotesParams {
   search?: string;
   page?: number;
   perPage?: number;
+  tag?: NoteTag | 'All'; // додано тег
 }
 
 export interface FetchNotesResponse {
@@ -33,6 +34,7 @@ export interface FetchNotesResponse {
   totalPages: number;
 }
 
+// Функція для отримання нотаток по тегу
 export const getNotes = async (tag?: NoteTag | 'All'): Promise<Note[]> => {
   const params: Record<string, string> = {};
 
@@ -44,28 +46,37 @@ export const getNotes = async (tag?: NoteTag | 'All'): Promise<Note[]> => {
   return data;
 };
 
+// Функція для отримання нотатки по ID
 export const getNoteById = async (id: string): Promise<Note> => {
   if (!id) throw new Error('Note id is required');
   const { data } = await api.get<Note>(`/notes/${id}`);
   return data;
 };
 
+// Функція для отримання нотаток з параметрами пошуку, пагінації і тегу
 export const fetchNotes = async ({
   search = '',
   page = 1,
   perPage = 12,
+  tag = 'All', // додано тег
 }: FetchNotesParams = {}): Promise<FetchNotesResponse> => {
-  const { data } = await api.get<FetchNotesResponse>('/notes', {
-    params: { search, page, perPage },
-  });
+  const params: Record<string, string | number> = { search, page, perPage };
+
+  if (tag && tag !== 'All') {
+    params.tag = tag;
+  }
+
+  const { data } = await api.get<FetchNotesResponse>('/notes', { params });
   return data;
 };
 
+// Створення нотатки
 export const createNote = async (note: CreateNote): Promise<Note> => {
   const { data } = await api.post<Note>('/notes', note);
   return data;
 };
 
+// Видалення нотатки
 export const deleteNote = async (id: string): Promise<Note> => {
   const { data } = await api.delete<Note>(`/notes/${id}`);
   return data;
